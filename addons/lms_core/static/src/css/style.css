@@ -1,0 +1,22 @@
+.lms-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    background: #f8f9fa;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.lms-card:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.lms-card h5 {
+    margin-bottom: 10px;
+}
+
+.lms-card p {
+    color: #666;
+    font-size: 14px;
+}

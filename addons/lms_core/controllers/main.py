@@ -1,0 +1,80 @@
+from odoo import http
+from odoo.http import request
+
+
+class LMSController(http.Controller):
+
+    # ----------------------
+    # LOGIN PAGE
+    # ----------------------
+    @http.route('/lms/login', type='http', auth='public', website=True)
+    def login_page(self, **kwargs):
+        return request.render('lms_core.login_template')
+
+
+    # ----------------------
+    # LOGIN SUBMIT
+    # ----------------------
+    @http.route('/lms/login/submit', type='http', auth='public', website=True, methods=['POST'])
+    def login_submit(self, **post):
+        login = post.get('login')
+        password = post.get('password')
+
+        try:
+            uid = request.session.authenticate(request.db, login, password)
+
+            if uid:
+                return request.redirect('/lms/dashboard')
+
+        except Exception:
+            pass
+
+        return request.render('lms_core.login_template', {
+            'error': 'Invalid email or password',
+            'login': login,
+        })
+
+
+    # ----------------------
+    # SIGNUP PAGE
+    # ----------------------
+    @http.route('/lms/signup', type='http', auth='public', website=True)
+    def signup_page(self, **kwargs):
+        return request.render('lms_core.signup_template')
+
+
+    # ----------------------
+    # SIGNUP SUBMIT (FAKE SIGNUP)
+    # ----------------------
+    @http.route('/lms/signup/submit', type='http', auth='public', website=True, methods=['POST'])
+    def signup_submit(self, **post):
+        email = post.get('email')
+
+        # Search for existing user
+        user = request.env['res.users'].sudo().search([
+            ('login', '=', email)
+        ], limit=1)
+
+        if user:
+            # Manually log user in (NO PASSWORD CHECK)
+            request.session.uid = user.id
+            return request.redirect('/lms/dashboard')
+
+        # If email not found, then show error
+        return request.render('lms_core.signup_template', {
+            'error': 'Email not found in system',
+            'email': email,
+        })
+
+
+    # ----------------------
+    # DASHBOARD
+    # ----------------------
+    @http.route('/lms/dashboard', type='http', auth='public', website=True)
+    def lms_dashboard(self, **kwargs):
+        user = request.env.user
+
+        if not user or user._is_public():
+            return request.redirect('/lms/login')
+
+        return request.render('lms_core.lms_dashboard')

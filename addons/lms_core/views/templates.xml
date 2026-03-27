@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- DASHBOARD -->
+    <!-- ========================= -->
+    <template id="lms_dashboard" name="LMS Dashboard">
+        <t t-call="website.layout">
+
+            <div class="container mt-5">
+                <h2 class="mb-4">LMS Dashboard</h2>
+
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>📚 Courses</h5>
+                            <p>Manage all courses</p>
+                            <a href="/lms/courses" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>👤 Students</h5>
+                            <p>View enrolled students</p>
+                            <a href="/lms/students" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>🏆 Certificates</h5>
+                            <p>Track certifications</p>
+                            <a href="/lms/certificates" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>📊 Progress</h5>
+                            <p>Monitor progress</p>
+                            <a href="/lms/progress" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </t>
+    </template>
+
+
+    <!-- ========================= -->
+    <!-- LOGIN PAGE -->
+    <!-- ========================= -->
+    <template id="login_template" name="LMS Login">
+        <t t-call="website.layout">
+
+            <div class="container mt-5" style="max-width: 400px;">
+                <h2 class="mb-4 text-center">LMS Login</h2>
+
+                <!-- ERROR MESSAGE -->
+                <t t-if="error">
+                    <div class="alert alert-danger">
+                        <t t-esc="error"/>
+                    </div>
+                </t>
+
+                <form action="/lms/login/submit" method="post">
+
+                    <!-- CSRF TOKEN -->
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                    <!-- EMAIL -->
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="text" name="login"
+                               t-att-value="login or ''"
+                               t-att-class="'form-control ' + ('is-invalid' if error else '')"
+                               required="required"/>
+                    </div>
+
+                    <!-- PASSWORD -->
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password"
+                               t-att-class="'form-control ' + ('is-invalid' if error else '')"
+                               required="required"/>
+                    </div>
+
+                    <!-- BUTTON -->
+                    <button type="submit" class="btn btn-primary w-100">
+                        Login
+                    </button>
+
+                </form>
+
+                <!-- LINK TO SIGNUP -->
+                <div class="text-center mt-3">
+                    <a href="/lms/signup">Don't have an account? Sign up</a>
+                </div>
+
+            </div>
+
+        </t>
+    </template>
+
+
+    <!-- ========================= -->
+    <!-- SIGNUP PAGE -->
+    <!-- ========================= -->
+    <template id="signup_template" name="LMS Signup">
+        <t t-call="website.layout">
+
+            <div class="container mt-5" style="max-width: 400px;">
+                <h2 class="mb-4 text-center">LMS Signup</h2>
+
+                <!-- ERROR MESSAGE -->
+                <t t-if="error">
+                    <div class="alert alert-danger">
+                        <t t-esc="error"/>
+                    </div>
+                </t>
+
+                <form action="/lms/signup/submit" method="post">
+
+                    <!-- CSRF TOKEN -->
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                    <!-- USERNAME (not used yet) -->
+                    <div class="mb-3">
+                        <label>Username</label>
+                        <input type="text" name="username"
+                               class="form-control"
+                               placeholder="Enter username"/>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="text" name="email"
+                               t-att-value="email or ''"
+                               t-att-class="'form-control ' + ('is-invalid' if error else '')"
+                               required="required"/>
+                    </div>
+
+                    <!-- PASSWORD (not used yet) -->
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password" name="password"
+                               class="form-control"
+                               placeholder="Enter password"/>
+                    </div>
+
+                    <!-- BUTTON -->
+                    <button type="submit" class="btn btn-success w-100">
+                        Sign Up
+                    </button>
+
+                </form>
+
+                <!-- LINK TO LOGIN -->
+                <div class="text-center mt-3">
+                    <a href="/lms/login">Already have an account? Login</a>
+                </div>
+
+            </div>
+
+        </t>
+    </template>
+
+</odoo>
