@@ -4,7 +4,7 @@
     <!-- ========================= -->
     <!-- DASHBOARD -->
     <!-- ========================= -->
-    <template id="lms_dashboard" name="LMS Dashboard">
+    <!--<template id="lms_dashboard" name="LMS Dashboard">
         <t t-call="website.layout">
 
             <div class="container mt-5">
@@ -45,6 +45,215 @@
                     </div>
 
                 </div>
+            </div>
+
+        </t>
+    </template>-->
+
+    <!--<template id="lms_dashboard" name="LMS Dashboard">
+        <t t-call="website.layout">
+
+            <div class="container mt-5">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">LMS Dashboard</h2>
+                    <span class="text-muted" style="font-size: 1rem;">
+                        <t t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>📚 Courses</h5>
+                            <p>Manage all courses</p>
+                            <a href="/lms/courses" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>👤 Students</h5>
+                            <p>View enrolled students</p>
+                            <a href="/lms/students" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>🏆 Certificates</h5>
+                            <p>Track certifications</p>
+                            <a href="/lms/certificates" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="lms-card">
+                            <h5>📊 Progress</h5>
+                            <p>Monitor progress</p>
+                            <a href="/lms/progress" class="btn btn-primary btn-sm">View</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </t>
+    </template>-->
+
+    <template id="lms_dashboard" name="LMS Dashboard">
+        <t t-call="website.layout">
+
+            <div class="container mt-5">
+
+                <!-- HEADER -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">LMS Dashboard</h2>
+                    <span class="text-muted">
+                        <t t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+
+                <!-- ========================= -->
+                <!-- STUDENT SECTION -->
+                <!-- ========================= -->
+
+                <!-- Uncomment later -->
+                <!-- <t t-if="request.env.user.is_student"> -->
+
+                <div class="mb-5">
+                    <h4 class="mb-3">🎓 Student Dashboard</h4>
+
+                    <div class="row">
+
+                        <!-- My Courses -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>📚 My Courses</h5>
+                                <p>List of enrolled courses</p>
+
+                                <ul>
+                                    <li>Course 1 - 60% complete</li>
+                                    <li>Course 2 - 30% complete</li>
+                                    <li>Course 3 - 90% complete</li>
+                                </ul>
+
+                            </div>
+                        </div>
+
+                        <!-- Progress Summary -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>📊 Progress Summary</h5>
+                                <p>Overall progress across courses</p>
+
+                                <ul>
+                                    <li>Course 1: 60%</li>
+                                    <li>Course 2: 30%</li>
+                                    <li>Course 3: 90%</li>
+                                </ul>
+
+                                <p><strong>Overall:</strong> 60%</p>
+                            </div>
+                        </div>
+
+                        <!-- Certificates -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>🏆 Certificates</h5>
+                                <p>Earned certifications</p>
+
+                                <ul>
+                                    <li>Python Basics Certificate</li>
+                                    <li>Web Dev Certificate</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-3">
+                        <a href="/lms/courses" class="btn btn-primary btn-sm me-2">
+                            Continue Course
+                        </a>
+                        <a href="/lms/courses" class="btn btn-outline-primary btn-sm">
+                            View All Courses
+                        </a>
+                    </div>
+                </div>
+
+                <!-- </t> -->
+
+
+
+                <!-- ========================= -->
+                <!-- 🧑INSTRUCTOR SECTION -->
+                <!-- ========================= -->
+
+                <!-- Uncomment later -->
+                <!-- <t t-if="request.env.user.is_instructor"> -->
+
+                <div class="mb-5">
+                    <h4 class="mb-3">🧑‍🏫 Instructor Dashboard</h4>
+
+                    <div class="row">
+
+                        <!-- Courses Teaching -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>📚 My Courses</h5>
+                                <p>Courses you created</p>
+
+                                <ul>
+                                    <li>Intro to Python</li>
+                                    <li>Advanced Web Dev</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Students -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>👥 Students</h5>
+                                <p>Enrollment overview</p>
+
+                                <ul>
+                                    <li>Python: 25 students</li>
+                                    <li>Web Dev: 18 students</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Course Performance -->
+                        <div class="col-md-4">
+                            <div class="lms-card">
+                                <h5>📊 Performance</h5>
+                                <p>Course completion stats</p>
+
+                                <ul>
+                                    <li>Python: 70% completion</li>
+                                    <li>Web Dev: 55% completion</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-3">
+                        <a href="/lms/create-course" class="btn btn-success btn-sm me-2">
+                            Create New Course
+                        </a>
+                        <a href="/lms/manage-courses" class="btn btn-outline-success btn-sm">
+                            Manage Courses
+                        </a>
+                    </div>
+                </div>
+
+                <!-- </t> -->
+
             </div>
 
         </t>
