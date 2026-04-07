@@ -22,6 +22,25 @@ class ResUsers(models.Model):
     is_instructor = fields.Boolean()
     is_admin = fields.Boolean()
 
+# -------------------------
+# Relationships (Reusable Core)
+# -------------------------
+
+student_course_ids = fields.Many2many(
+    'lms.course',
+    'lms_course_student_rel',
+    'user_id',
+    'course_id',
+    string='Courses as Student'
+)
+
+instructor_course_ids = fields.One2many(
+    'lms.course',
+    'instructor_id',
+    string='Courses as Instructor'
+)
+
+    
     # -------------------------
     # Computed Fields
     # -------------------------
