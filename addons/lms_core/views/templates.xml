@@ -114,6 +114,32 @@
                         <t t-esc="request.env.user.name"/>
                     </span>
                 </div>
+                
+            <!-- ========================= -->
+            <!-- SEARCH USERS -->
+            <!-- ========================= -->
+
+            <div class="mb-5">
+                <h4 class="mb-3">🔍 Search Users</h4>
+
+                <form action="/lms/search" method="get" class="row g-2">
+
+                    <div class="col-md-10">
+                        <input type="text"
+                               name="query"
+                               class="form-control"
+                               placeholder="Search by name or email"/>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Search
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
 
                 <!-- ========================= -->
                 <!-- STUDENT SECTION -->
