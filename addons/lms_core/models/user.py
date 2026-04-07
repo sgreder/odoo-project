@@ -1,4 +1,6 @@
-from odoo import models, fields, api
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.osv import expression
 
 
 class ResUsers(models.Model):
@@ -18,29 +20,27 @@ class ResUsers(models.Model):
     # -------------------------
     # Role Flags
     # -------------------------
-    is_student = fields.Boolean()
+    is_student = fields.Boolean(default=True)
     is_instructor = fields.Boolean()
     is_admin = fields.Boolean()
 
-# -------------------------
-# Relationships (Reusable Core)
-# -------------------------
+    # -------------------------
+    # Relationships (Reusable Core)
+    # -------------------------
+    student_course_ids = fields.Many2many(
+        'lms.course',
+        'lms_course_student_rel',
+        'user_id',
+        'course_id',
+        string='Courses as Student'
+    )
 
-student_course_ids = fields.Many2many(
-    'lms.course',
-    'lms_course_student_rel',
-    'user_id',
-    'course_id',
-    string='Courses as Student'
-)
+    instructor_course_ids = fields.One2many(
+        'lms.course',
+        'instructor_id',
+        string='Courses as Instructor'
+    )
 
-instructor_course_ids = fields.One2many(
-    'lms.course',
-    'instructor_id',
-    string='Courses as Instructor'
-)
-
-    
     # -------------------------
     # Computed Fields
     # -------------------------
@@ -70,3 +70,109 @@ instructor_course_ids = fields.One2many(
     def _compute_progress_summary(self):
         for user in self:
             user.progress_summary = 0.0
+
+    # -------------------------
+    # Business Logic
+    # -------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Default new users to student when role is not provided."""
+        for vals in vals_list:
+            vals.setdefault('is_student', True)
+        return super().create(vals_list)
+
+    @api.model
+    def _role_field_mapping(self):
+        return {
+            'student': 'is_student',
+            'instructor': 'is_instructor',
+            'admin': 'is_admin',
+        }
+
+    @api.model
+    def _normalize_role_name(self, role_name):
+        normalized = (role_name or '').strip().lower()
+        if normalized not in self._role_field_mapping():
+            raise ValidationError(
+                "Invalid role '%s'. Allowed roles: student, instructor, admin."
+                % (role_name or '')
+            )
+        return normalized
+
+    def assign_role(self, role_name):
+        """Assign a role flag to each user record."""
+        role = self._normalize_role_name(role_name)
+        role_field = self._role_field_mapping()[role]
+        self.write({role_field: True})
+        return True
+
+    @api.model
+    def search_users(self, query):
+        """Search users by name, email/login, and role."""
+        query = (query or '').strip()
+        if not query:
+            return self.browse()
+
+        domain = expression.OR([
+            [('name', 'ilike', query)],
+            [('login', 'ilike', query)],
+        ])
+
+        role_domains = []
+        lowered = query.lower()
+        for role, role_field in self._role_field_mapping().items():
+            if role.startswith(lowered) or lowered in role:
+                role_domains.append([(role_field, '=', True)])
+
+        if role_domains:
+            domain = expression.OR([domain] + role_domains)
+
+        return self.search(domain)
+
+    def get_profile_data(self):
+        """Return profile payload including basic info, roles and LMS details."""
+        self.ensure_one()
+
+        roles = [
+            role
+            for role, role_field in self._role_field_mapping().items()
+            if self[role_field]
+        ]
+
+        student_data = {
+            'courses': [],
+            'enrollments_count': 0,
+            'completed_courses_count': 0,
+        }
+        instructor_data = {
+            'courses_taught': [],
+            'courses_taught_count': 0,
+        }
+
+        if 'student_course_ids' in self._fields:
+            student_data['courses'] = self.student_course_ids.mapped('name')
+        if 'enrollment_ids' in self._fields:
+            student_data['enrollments_count'] = len(self.enrollment_ids)
+        if 'completed_course_ids' in self._fields:
+            student_data['completed_courses_count'] = len(self.completed_course_ids)
+
+        if 'instructor_course_ids' in self._fields:
+            instructor_data['courses_taught'] = self.instructor_course_ids.mapped('name')
+            instructor_data['courses_taught_count'] = len(self.instructor_course_ids)
+        elif 'course_ids' in self._fields:
+            instructor_data['courses_taught'] = self.course_ids.mapped('name')
+            instructor_data['courses_taught_count'] = len(self.course_ids)
+
+        return {
+            'basic_info': {
+                'id': self.id,
+                'name': self.name,
+                'email': self.login,
+                'bio': self.bio,
+                'experience_level': self.experience_level,
+                'rating': self.rating,
+            },
+            'roles': roles,
+            'student_data': student_data,
+            'instructor_data': instructor_data,
+        }
