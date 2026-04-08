@@ -144,3 +144,15 @@ class LMSController(http.Controller):
             return request.redirect('/lms/login')
 
         return request.render('lms_core.lms_dashboard')
+
+    # ----------------------
+    # SEARCH USER
+    # ----------------------
+    @http.route('/lms/search', type='http', auth='user', website=True)
+    def lms_search(self, query=None, **kwargs):
+        users = request.env['res.users'].sudo().search_users(query)
+
+        return request.render('lms_core.search_results', {
+            'query': query,
+            'users': users,
+        })

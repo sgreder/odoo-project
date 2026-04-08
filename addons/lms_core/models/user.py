@@ -1,4 +1,6 @@
-from odoo import models, fields, api
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.osv import expression
 
 
 class ResUsers(models.Model):
@@ -18,7 +20,7 @@ class ResUsers(models.Model):
     # -------------------------
     # Role Flags
     # -------------------------
-    is_student = fields.Boolean()
+    is_student = fields.Boolean(default=True)
     is_instructor = fields.Boolean()
     is_admin = fields.Boolean()
 
@@ -51,3 +53,83 @@ class ResUsers(models.Model):
     def _compute_progress_summary(self):
         for user in self:
             user.progress_summary = 0.0
+
+    # -------------------------
+    # Business Logic
+    # -------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Default new users to student when role is not provided."""
+        for vals in vals_list:
+            vals.setdefault('is_student', True)
+        return super().create(vals_list)
+
+    @api.model
+    def _role_field_mapping(self):
+        return {
+            'student': 'is_student',
+            'instructor': 'is_instructor',
+            'admin': 'is_admin',
+        }
+
+    @api.model
+    def _normalize_role_name(self, role_name):
+        normalized = (role_name or '').strip().lower()
+        if normalized not in self._role_field_mapping():
+            raise ValidationError(
+                "Invalid role '%s'. Allowed roles: student, instructor, admin."
+                % (role_name or '')
+            )
+        return normalized
+
+    def assign_role(self, role_name):
+        """Assign a role flag to each user record."""
+        role = self._normalize_role_name(role_name)
+        role_field = self._role_field_mapping()[role]
+        self.write({role_field: True})
+        return True
+
+    @api.model
+    def search_users(self, query):
+        """Search users by name, email/login, and role."""
+        query = (query or '').strip()
+        if not query:
+            return self.browse()
+
+        domain = expression.OR([
+            [('name', 'ilike', query)],
+            [('login', 'ilike', query)],
+        ])
+
+        role_domains = []
+        lowered = query.lower()
+        for role, role_field in self._role_field_mapping().items():
+            if role.startswith(lowered) or lowered in role:
+                role_domains.append([(role_field, '=', True)])
+
+        if role_domains:
+            domain = expression.OR([domain] + role_domains)
+
+        return self.search(domain)
+
+    def get_profile_data(self):
+        """Return core profile payload with basic info and roles only."""
+        self.ensure_one()
+
+        roles = [
+            role
+            for role, role_field in self._role_field_mapping().items()
+            if self[role_field]
+        ]
+
+        return {
+            'basic_info': {
+                'id': self.id,
+                'name': self.name,
+                'email': self.login,
+                'bio': self.bio,
+                'experience_level': self.experience_level,
+                'rating': self.rating,
+            },
+            'roles': roles,
+        }

@@ -114,6 +114,32 @@
                         <t t-esc="request.env.user.name"/>
                     </span>
                 </div>
+                
+            <!-- ========================= -->
+            <!-- SEARCH USERS -->
+            <!-- ========================= -->
+
+            <div class="mb-5">
+                <h4 class="mb-3">🔍 Search Users</h4>
+
+                <form action="/lms/search" method="get" class="row g-2">
+
+                    <div class="col-md-10">
+                        <input type="text"
+                               name="query"
+                               class="form-control"
+                               placeholder="Search by name or email"/>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Search
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
 
                 <!-- ========================= -->
                 <!-- STUDENT SECTION -->
@@ -254,6 +280,39 @@
 
                 <!-- </t> -->
 
+            </div>
+
+        </t>
+    </template>
+
+    <!-- ========================= -->
+    <!-- SEARCH RESULT PAGE -->
+    <!-- ========================= -->
+    <template id="search_results" name="Search Results">
+        <t t-call="website.layout">
+
+            <div class="container mt-5">
+                <h2>Search Results</h2>
+
+                <p>
+                    You searched for:
+                    <strong t-esc="query"/>
+                </p>
+
+                <t t-if="users">
+                    <ul>
+                        <t t-foreach="users" t-as="user">
+                            <li>
+                                <span t-esc="user.name"/> -
+                                <span t-esc="user.login"/>
+                            </li>
+                        </t>
+                    </ul>
+                </t>
+
+                <t t-else="">
+                    <p>No users found.</p>
+                </t>
             </div>
 
         </t>
