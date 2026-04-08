@@ -1,11 +1,17 @@
 {
     'name': 'LMS Core',
     'version': '1.0',
-    'depends': ['website'],
+    'depends': [
+        'base',        
+        'website',     
+    ],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
         'views/templates.xml',
+        # add security files later:
+        # 'security/ir.model.access.csv',
+        # 'security/security.xml',
     ],
     'assets': {
         'web.assets_frontend': [

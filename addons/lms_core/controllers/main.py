@@ -46,7 +46,7 @@ class LMSController(http.Controller):
     # ----------------------
     # SIGNUP SUBMIT (FAKE SIGNUP)
     # ----------------------
-    @http.route('/lms/signup/submit', type='http', auth='public', website=True, methods=['POST'])
+    """@http.route('/lms/signup/submit', type='http', auth='public', website=True, methods=['POST'])
     def signup_submit(self, **post):
         email = post.get('email')
 
@@ -64,7 +64,73 @@ class LMSController(http.Controller):
         return request.render('lms_core.signup_template', {
             'error': 'Email not found in system',
             'email': email,
-        })
+        })"""
+    
+    # ----------------------
+    # SIGNUP SUBMIT (REAL SIGNUP)
+    # ----------------------
+    @http.route('/lms/signup/submit', type='http', auth='public', website=True, methods=['POST'])
+    def signup_submit(self, **post):
+
+        name = post.get('username')
+        email = post.get('email')
+        password = post.get('password')
+
+        # ----------------------
+        # VALIDATION
+        # ----------------------
+        if not email or not password:
+            return request.render('lms_core.signup_template', {
+                'error': 'Email and password are required',
+                'email': email,
+            })
+
+        # ----------------------
+        # CHECK IF USER EXISTS
+        # ----------------------
+        existing_user = request.env['res.users'].sudo().search([
+            ('login', '=', email)
+        ], limit=1)
+
+        if existing_user:
+            return request.render('lms_core.signup_template', {
+                'error': 'An account with this email already exists',
+                'email': email,
+            })
+
+        # ----------------------
+        # CREATE USER
+        # ----------------------
+        try:
+            user = request.env['res.users'].sudo().create({
+                'name': name or email,
+                'login': email,
+                'is_student': True,
+                'groups_id': [(6, 0, [
+                    request.env.ref('base.group_user').id
+                ])],
+            })
+
+            user._set_password(password)
+
+            request.env.cr.commit()
+            
+        except Exception:
+            return request.render('lms_core.signup_template', {
+                'error': 'Failed to create account',
+                'email': email,
+            })
+
+        # ----------------------
+        # LOG USER IN
+        # ----------------------
+        uid = request.session.authenticate(request.db, email, password)
+
+        if uid:
+            return request.redirect('/lms/dashboard')
+
+        # fallback (rare)
+        return request.redirect('/lms/login')
 
 
     # ----------------------
