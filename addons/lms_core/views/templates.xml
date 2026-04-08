@@ -396,12 +396,14 @@
                     <!-- CSRF TOKEN -->
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
-                    <!-- USERNAME (not used yet) -->
+                    <!-- USERNAME -->
                     <div class="mb-3">
                         <label>Username</label>
                         <input type="text" name="username"
-                               class="form-control"
-                               placeholder="Enter username"/>
+                               t-att-value="username or ''"
+                               t-att-class="'form-control ' + ('is-invalid' if error else '')"
+                               placeholder="Enter username"
+                               required="required"/>
                     </div>
 
                     <!-- EMAIL -->
@@ -413,12 +415,13 @@
                                required="required"/>
                     </div>
 
-                    <!-- PASSWORD (not used yet) -->
+                    <!-- PASSWORD -->
                     <div class="mb-3">
                         <label>Password</label>
                         <input type="password" name="password"
-                               class="form-control"
-                               placeholder="Enter password"/>
+                               t-att-class="'form-control ' + ('is-invalid' if error else '')"
+                               placeholder="At least 8 chars, 1 letter and 1 number"
+                               required="required"/>
                     </div>
 
                     <!-- BUTTON -->
@@ -431,6 +434,67 @@
                 <!-- LINK TO LOGIN -->
                 <div class="text-center mt-3">
                     <a href="/lms/login">Already have an account? Login</a>
+                </div>
+
+            </div>
+
+        </t>
+    </template>
+
+
+    <!-- ========================= -->
+    <!-- PROFILE PAGE -->
+    <!-- ========================= -->
+    <template id="profile_template" name="LMS Profile">
+        <t t-call="website.layout">
+
+            <div class="container mt-5" style="max-width: 600px;">
+
+                <h2 class="mb-4">👤 My Profile</h2>
+
+                <div class="lms-card p-4">
+
+                    <div class="mb-3">
+                        <strong>Name:</strong>
+                        <span t-esc="profile['basic_info']['name']"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Email:</strong>
+                        <span t-esc="profile['basic_info']['email']"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Bio:</strong>
+                        <span t-esc="profile['basic_info']['bio'] or '—'"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Experience Level:</strong>
+                        <span t-esc="profile['basic_info']['experience_level'] or '—'"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Rating:</strong>
+                        <span t-esc="profile['basic_info']['rating']"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Roles:</strong>
+                        <t t-if="profile['roles']">
+                            <span t-esc="', '.join(profile['roles'])"/>
+                        </t>
+                        <t t-else="">
+                            <span>—</span>
+                        </t>
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+                    <a href="/lms/dashboard" class="btn btn-outline-primary btn-sm">
+                        Back to Dashboard
+                    </a>
                 </div>
 
             </div>
