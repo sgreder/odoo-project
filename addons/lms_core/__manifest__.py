@@ -6,6 +6,8 @@
         'website',     
     ],
     'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
         'views/templates.xml',
         # add security files later:
         # 'security/ir.model.access.csv',
