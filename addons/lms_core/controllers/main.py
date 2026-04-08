@@ -156,3 +156,108 @@ class LMSController(http.Controller):
             'query': query,
             'users': users,
         })
+
+    # ----------------------
+    # USER PROFILE PAGE
+    # ----------------------
+    @http.route('/lms/user/<int:user_id>', type='http', auth='user', website=True)
+    def user_profile(self, user_id, **kwargs):
+        user = request.env['res.users'].sudo().browse(user_id)
+
+        if not user.exists():
+            return request.redirect('/lms/dashboard')
+
+        return request.render('lms_core.user_profile', {
+            'profile_user': user,
+        })
+    
+    # ----------------------
+    # USER RATING PAGE
+    # ----------------------
+    @http.route('/lms/user/rate', type='http', auth='user', website=True, methods=['POST'])
+    def rate_user(self, **post):
+        try:
+            user_id = int(post.get('user_id'))
+            rating = int(post.get('rating'))
+        except (TypeError, ValueError):
+            return request.redirect('/lms/dashboard')
+
+        user = request.env['res.users'].sudo().browse(user_id)
+
+        # Check if user exists
+        if not user.exists():
+            return request.redirect('/lms/dashboard')
+
+        # Submit or update rating
+        user.submit_or_update_rating(rating)
+
+        # Redirect back to profile
+        return request.redirect(f'/lms/user/{user_id}')
+
+    @http.route('/lms/user/<int:user_id>/rate', type='http', auth='user', website=True)
+    def rate_page(self, user_id, **kwargs):
+        user = request.env['res.users'].sudo().browse(user_id)
+
+        return request.render('lms_core.user_rate_page', {
+            'profile_user': user
+        })
+    
+    # ----------------------
+    # EDIT USER PROFILE PAGE
+    # ----------------------
+    @http.route('/lms/user/<int:user_id>/edit', type='http', auth='user', website=True, methods=['GET'])
+    def edit_user_profile_page(self, user_id, **kwargs):
+        user = request.env['res.users'].sudo().browse(user_id)
+
+        if not user.exists():
+            return request.redirect('/lms/dashboard')
+
+        if request.env.user.id != user.id:
+            return request.redirect(f'/lms/user/{user_id}')
+
+        return request.render('lms_core.edit_user_profile', {
+            'profile_user': user,
+        })
+    
+    @http.route('/lms/user/<int:user_id>/edit', type='http', auth='user', website=True, methods=['POST'])
+    def edit_user_profile_submit(self, user_id, **post):
+        user = request.env['res.users'].sudo().browse(user_id)
+
+        if not user.exists():
+            return request.redirect('/lms/dashboard')
+
+        if request.env.user.id != user.id:
+            return request.redirect(f'/lms/user/{user_id}')
+
+        login = (post.get('login') or '').strip()
+
+        if not login:
+            return request.render('lms_core.edit_user_profile', {
+                'profile_user': user,
+                'error': 'Email is required.',
+            })
+
+        existing_user = request.env['res.users'].sudo().search([
+            ('login', '=', login),
+            ('id', '!=', user.id),
+        ], limit=1)
+
+        if existing_user:
+            return request.render('lms_core.edit_user_profile', {
+                'profile_user': user,
+                'error': 'That email is already being used by another account.',
+            })
+
+        vals = {
+            'name': (post.get('name') or '').strip(),
+            'login': login,
+            'bio': (post.get('bio') or '').strip(),
+            'experience_level': post.get('experience_level') or False,
+            'is_student': bool(post.get('is_student')),
+            'is_instructor': bool(post.get('is_instructor')),
+            'is_admin': bool(post.get('is_admin')),
+        }
+
+        user.write(vals)
+
+        return request.redirect(f'/lms/user/{user_id}')

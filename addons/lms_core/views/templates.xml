@@ -110,9 +110,13 @@
                 <!-- HEADER -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="mb-0">LMS Dashboard</h2>
-                    <span class="text-muted">
+
+                    <a t-att-href="'/lms/user/%s' % request.env.user.id"
+                        class="text-muted">
+
                         <t t-esc="request.env.user.name"/>
-                    </span>
+
+                    </a>
                 </div>
                 
             <!-- ========================= -->
@@ -303,8 +307,11 @@
                     <ul>
                         <t t-foreach="users" t-as="user">
                             <li>
-                                <span t-esc="user.name"/> -
-                                <span t-esc="user.login"/>
+                                <a t-att-href="'/lms/user/%s' % user.id">
+                                    <span t-esc="user.name"/>
+                                    -
+                                    <span t-esc="user.login"/>
+                                </a>
                             </li>
                         </t>
                     </ul>
@@ -313,6 +320,262 @@
                 <t t-else="">
                     <p>No users found.</p>
                 </t>
+            </div>
+
+        </t>
+    </template>
+
+    <!-- ========================= -->
+    <!-- USER PROFILE PAGE -->
+    <!-- ========================= -->
+    <template id="user_profile" name="User Profile">
+        <t t-call="website.layout">
+
+            <div class="container mt-5">
+
+                <h2>User Profile</h2>
+
+                <div class="card p-4">
+
+                    <h4 t-esc="profile_user.name"/>
+
+                    <p>
+                        <strong>Email:</strong>
+                        <span t-esc="profile_user.login"/>
+                    </p>
+
+                    <p>
+                        <strong>Bio:</strong>
+                        <span t-esc="profile_user.bio or 'No bio available'"/>
+                    </p>
+
+                    <p>
+                        <strong>Experience Level:</strong>
+                        <span t-esc="profile_user.experience_level or 'Not set'"/>
+                    </p>
+
+                    <p>
+                        <strong>Role:</strong>
+                        <t t-if="profile_user.is_student">Student</t>
+                        <t t-if="profile_user.is_instructor">Instructor</t>
+                        <t t-if="profile_user.is_admin">Admin</t>
+                    </p>
+
+                    <p>
+                        <strong>Rating:</strong>
+                        <span t-esc="profile_user.rating or 0"/> ⭐
+                        (<span t-esc="profile_user.rating_count or 0"/> ratings)
+                    </p>
+
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+
+                    <!-- RATE BUTTON -->
+                    <a t-att-href="'/lms/user/%s/rate' % profile_user.id"
+                        class="btn btn-warning">
+                        ⭐ Rate this user
+                    </a>
+
+                    <!-- EDIT BUTTON -->
+                    <t t-if="request.env.user.id == profile_user.id">
+                        <a t-att-href="'/lms/user/%s/edit' % profile_user.id"
+                            class="btn btn-primary">
+                            Edit Profile
+                        </a>
+                    </t>
+
+                    <!-- BACK BUTTON -->
+                    <a href="/lms/dashboard" class="btn btn-secondary">
+                        Back
+                    </a>
+
+                </div>
+
+            </div>
+
+        </t>
+    </template>
+
+    <!-- ========================= -->
+    <!-- EDIT USER PAGE -->
+    <!-- ========================= -->
+        <template id="edit_user_profile" name="Edit User Profile">
+        <t t-call="website.layout">
+
+            <div class="container mt-5" style="max-width: 700px;">
+
+                <h2>Edit Profile</h2>
+
+                <t t-if="error">
+                    <div class="alert alert-danger">
+                        <t t-esc="error"/>
+                    </div>
+                </t>
+
+                <div class="card p-4">
+                    <form t-att-action="'/lms/user/%s/edit' % profile_user.id" method="post">
+
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                        <div class="mb-3">
+                            <label>Name</label>
+                            <input type="text"
+                                   name="name"
+                                   class="form-control"
+                                   t-att-value="profile_user.name or ''"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <input type="email"
+                                   name="login"
+                                   class="form-control"
+                                   t-att-value="profile_user.login or ''"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Bio</label>
+                            <textarea name="bio"
+                                      class="form-control"
+                                      rows="4"><t t-esc="profile_user.bio or ''"/></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Experience Level</label>
+                            <select name="experience_level" class="form-control">
+                                <option value="">Select experience level</option>
+                                <option value="beginner"
+                                        t-att-selected="'selected' if profile_user.experience_level == 'beginner' else None">
+                                    Beginner
+                                </option>
+                                <option value="intermediate"
+                                        t-att-selected="'selected' if profile_user.experience_level == 'intermediate' else None">
+                                    Intermediate
+                                </option>
+                                <option value="advanced"
+                                        t-att-selected="'selected' if profile_user.experience_level == 'advanced' else None">
+                                    Advanced
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox"
+                                   name="is_student"
+                                   class="form-check-input"
+                                   value="1"
+                                   t-att-checked="'checked' if profile_user.is_student else None"/>
+                            <label class="form-check-label">Student</label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox"
+                                   name="is_instructor"
+                                   class="form-check-input"
+                                   value="1"
+                                   t-att-checked="'checked' if profile_user.is_instructor else None"/>
+                            <label class="form-check-label">Instructor</label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox"
+                                   name="is_admin"
+                                   class="form-check-input"
+                                   value="1"
+                                   t-att-checked="'checked' if profile_user.is_admin else None"/>
+                            <label class="form-check-label">Admin</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Rating</label>
+                            <input type="text"
+                                   class="form-control"
+                                   t-att-value="profile_user.rating or 0"
+                                   readonly="readonly"/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Total Ratings</label>
+                            <input type="text"
+                                   class="form-control"
+                                   t-att-value="profile_user.rating_count or 0"
+                                   readonly="readonly"/>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            Save Changes
+                        </button>
+
+                        <a t-att-href="'/lms/user/%s' % profile_user.id"
+                           class="btn btn-secondary ms-2">
+                            Cancel
+                        </a>
+
+                    </form>
+                </div>
+
+            </div>
+
+        </t>
+    </template>
+
+    <!-- ========================= -->
+    <!-- USER RATING PAGE -->
+    <!-- ========================= -->
+    <template id="user_rate_page" name="Rate User">
+        <t t-call="website.layout">
+
+            <div class="container mt-5" style="max-width: 500px;">
+
+                <h3>Rate <t t-esc="profile_user.name"/></h3>
+
+                <!-- SHOW EXISTING RATING -->
+                <t t-set="existing_rating"
+                    t-value="request.env['lms.user.rating'].sudo().search([
+                        ('rater_id', '=', request.env.user.id),
+                        ('rated_user_id', '=', profile_user.id)
+                    ], limit=1)"/>
+
+                <t t-if="existing_rating">
+                    <div class="alert alert-info">
+                        You previously rated this user:
+                        <strong t-esc="existing_rating.rating"/> ⭐
+                    </div>
+                </t>
+
+                <form action="/lms/user/rate" method="post">
+
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="user_id" t-att-value="profile_user.id"/>
+
+                    <div class="mb-3">
+                        <label>Select Rating:</label>
+
+                        <select name="rating" class="form-control">
+
+                            <option value="1">⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+
+                        </select>
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Submit Rating
+                    </button>
+
+                </form>
+
+                <div class="mt-3 text-center">
+                    <a t-att-href="'/lms/user/%s' % profile_user.id">
+                        ← Back to Profile
+                    </a>
+                </div>
+
             </div>
 
         </t>

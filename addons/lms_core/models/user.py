@@ -32,7 +32,9 @@ class ResUsers(models.Model):
         store=True
     )
 
-    rating = fields.Float()
+    rating = fields.Float(string='Rating', default=0.0)
+
+    rating_count = fields.Integer(string='Rating Count', default=0)
 
     # -------------------------
     # Constraints
@@ -133,3 +135,42 @@ class ResUsers(models.Model):
             },
             'roles': roles,
         }
+
+    def submit_or_update_rating(self, rating_value):
+        """
+        Create or update a rating from current user → this user
+        """
+        self.ensure_one()
+        current_user = self.env.user
+
+        """if current_user.id == self.id:
+            raise ValidationError("You cannot rate yourself.")"""
+
+        rating_model = self.env['lms.user.rating']
+
+        existing = rating_model.search([
+            ('rater_id', '=', current_user.id),
+            ('rated_user_id', '=', self.id)
+        ], limit=1)
+
+        if existing:
+            existing.rating = rating_value
+
+        else:
+            rating_model.create({
+                'rater_id': current_user.id,
+                'rated_user_id': self.id,
+                'rating': rating_value,
+            })
+
+        # recompute average + count
+        ratings = rating_model.search([('rated_user_id', '=', self.id)])
+        total = sum(r.rating for r in ratings)
+        count = len(ratings)
+
+        self.write({
+            'rating': total / count if count else 0,
+            'rating_count': count,
+        })
+
+        return True
