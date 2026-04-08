@@ -3,6 +3,8 @@
     'version': '1.0',
     'depends': ['website'],
     'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
         'views/templates.xml',
     ],
     'assets': {

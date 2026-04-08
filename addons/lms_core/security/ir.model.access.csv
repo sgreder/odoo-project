@@ -1,1 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lms_course_admin,lms.course.admin,model_lms_course,base.group_system,1,1,1,1
+access_lms_course_user,lms.course.user,model_lms_course,base.group_user,1,0,0,0
+access_lms_lesson_admin,lms.lesson.admin,model_lms_lesson,base.group_system,1,1,1,1
+access_lms_lesson_user,lms.lesson.user,model_lms_lesson,base.group_user,1,0,0,0
