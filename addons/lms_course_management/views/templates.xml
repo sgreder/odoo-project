@@ -1,3 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+  
+template id="course_catalog_page" name="LMS Course Catalog">
+    <t t-call="website.layout">
+      <div class="container">
+        <h1>Course Catalog</h1>
+        <p>This is the course catalog page.</p>
+      </div>
+    </t>
+  </template>
+
 </odoo>
