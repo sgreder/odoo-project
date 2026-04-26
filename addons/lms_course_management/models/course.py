@@ -27,3 +27,16 @@ class Course(models.Model):
         inverse_name="course_id",
         string="Enrollments"
     )
+    
+  # -------------------------
+    # Name Search Override
+    # -------------------------
+    def _name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
+        args = args or []
+        if name:
+            args = ['|', '|',
+                ('name', operator, name),
+                ('description', operator, name),
+                ('category', operator, name),
+            ] + args
+        return self._search(args, limit=limit, access_rights_uid=name_get_uid)
