@@ -1,13 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  
-template id="course_catalog_page" name="LMS Course Catalog">
-    <t t-call="website.layout">
-      <div class="container">
-        <h1>Course Catalog</h1>
-        <p>This is the course catalog page.</p>
-      </div>
-    </t>
-  </template>
+
+    <!-- ========================= -->
+    <!-- Website Course Catalog -->
+    <!-- ========================= -->
+    <template id="course_catalog_page" name="LMS Course Catalog">
+        <t t-call="website.layout">
+            <div class="container">
+                <h1>Course Catalog</h1>
+                <p>This is the course catalog page.</p>
+            </div>
+        </t>
+    </template>
+
+    <!-- ========================= -->
+    <!-- Course Search View -->
+    <!-- ========================= -->
+    <record id="view_course_search" model="ir.ui.view">
+        <field name="name">lms.course.search</field>
+        <field name="model">lms.course</field>
+        <field name="arch" type="xml">
+            <search string="Search Courses">
+                <field name="name"
+                       string="Course"
+                       filter_domain="['|', '|',
+                           ('name', 'ilike', self),
+                           ('description', 'ilike', self),
+                           ('category', 'ilike', self)]"/>
+                <filter string="Active"
+                        name="active"
+                        domain="[('active','=',True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Category"
+                            name="group_by_category"
+                            context="{'group_by': 'category'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
 </odoo>
