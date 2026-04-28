@@ -1,5 +1,4 @@
 from odoo import fields, models
-<<<<<<< HEAD
 from odoo.exceptions import ValidationError
 from odoo.exceptions import UserError
 
@@ -16,6 +15,7 @@ class Course(models.Model):
     description = fields.Text(string="Description")
 
     is_published = fields.Boolean(default=False)
+
     # -------------------------
     # Relationships
     # -------------------------
@@ -29,6 +29,12 @@ class Course(models.Model):
         comodel_name="lms.enrollment",
         inverse_name="course_id",
         string="Enrollments"
+    )
+
+    module_ids = fields.One2many(
+        comodel_name="lms.module",
+        inverse_name="course_id",
+        string="Modules"
     )
 
     
@@ -91,10 +97,3 @@ class Course(models.Model):
             result.append(course_data)
 
         return result
-=======
-
-class LMScourse(models.Model):
-    _name = "lms.course"
-
-    instructor_id = fields.Many2one("res.users")
->>>>>>> fe256f429be59e22996a259e5f38d99235eb777f

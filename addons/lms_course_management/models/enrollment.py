@@ -44,8 +44,3 @@ class Enrollment(models.Model):
         ('unique_enrollment', 'unique(user_id, course_id)', 'User is already enrolled in this course.')
     ]
 
-class LMSEnrollment(models.Model):
-    _name = "lms.enrollment"
-
-    user_id = fields.Many2one("res.users", string = 'User', required = True)
-

@@ -1,4 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 
 access_lms_course,lms.course,model_lms_course,,1,1,1,1
+access_lms_module,lms.module,model_lms_module,,1,1,1,1
 access_lms_enrollment,lms.enrollment,model_lms_enrollment,,1,1,1,1
+access_lms_lesson,lms.lesson,model_lms_lesson,,1,1,1,1
+access_lms_content,lms.content,model_lms_content,,1,1,1,1
