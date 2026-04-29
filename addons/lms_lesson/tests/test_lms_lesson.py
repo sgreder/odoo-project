@@ -1,7 +1,8 @@
 """
 Tests for lms.lesson and lms.lesson.content models.
-Covers all acceptance criteria from the spec.
+Covers acceptance criteria for Scrum 32 (lesson) and Scrum 33 (content).
 """
+from odoo.exceptions import ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -9,11 +10,12 @@ class TestLmsLesson(TransactionCase):
 
     def setUp(self):
         super().setUp()
-        # Requires lms.course.module to exist (provided by lms_course addon)
-        self.course = self.env['lms.course'].create({'name': 'Test Course'})
+        self.course = self.env['lms.course'].create({
+            'name': 'Test Course',
+        })
         self.module = self.env['lms.course.module'].create({
-            'course_id': self.course.id,
             'name': 'Test Module',
+            'course_id': self.course.id,
         })
 
     # ------------------------------------------------------------------
@@ -21,7 +23,6 @@ class TestLmsLesson(TransactionCase):
     # ------------------------------------------------------------------
 
     def test_lesson_requires_module_id(self):
-        """module_id is required."""
         with self.assertRaises(Exception):
             self.env['lms.lesson'].create({'name': 'No Module'})
 
@@ -33,14 +34,12 @@ class TestLmsLesson(TransactionCase):
         self.assertEqual(lesson.module_id, self.module)
 
     def test_module_lesson_ids_inverse(self):
-        """module.lesson_ids returns all lessons of the module."""
         l1 = self.env['lms.lesson'].create({'name': 'L1', 'module_id': self.module.id})
         l2 = self.env['lms.lesson'].create({'name': 'L2', 'module_id': self.module.id})
         self.assertIn(l1, self.module.lesson_ids)
         self.assertIn(l2, self.module.lesson_ids)
 
     def test_cascade_delete_lessons_on_module_delete(self):
-        """Deleting a module cascades to its lessons."""
         lesson = self.env['lms.lesson'].create({
             'name': 'To Be Deleted',
             'module_id': self.module.id,
@@ -83,9 +82,9 @@ class TestLmsLesson(TransactionCase):
             'name': 'Rich Lesson',
             'module_id': self.module.id,
             'content_ids': [
-                (0, 0, {'type': 'text', 'text_content': '<p>Hello</p>'}),
-                (0, 0, {'type': 'video', 'url': 'https://youtube.com/watch?v=abc'}),
-                (0, 0, {'type': 'link', 'url': 'https://example.com'}),
+                (0, 0, {'content_type': 'text', 'text_content': 'Hello'}),
+                (0, 0, {'content_type': 'video', 'url': 'https://youtube.com/watch?v=abc'}),
+                (0, 0, {'content_type': 'link', 'url': 'https://example.com'}),
             ],
         })
         self.assertEqual(len(lesson.content_ids), 3)
@@ -97,8 +96,8 @@ class TestLmsLesson(TransactionCase):
         })
         content = self.env['lms.lesson.content'].create({
             'lesson_id': lesson.id,
-            'type': 'text',
-            'text_content': '<p>Body</p>',
+            'content_type': 'text',
+            'text_content': 'Body',
         })
         self.assertIn(content, lesson.content_ids)
 
@@ -107,14 +106,14 @@ class TestLmsLesson(TransactionCase):
             'name': 'Multi-type',
             'module_id': self.module.id,
             'content_ids': [
-                (0, 0, {'type': 'text'}),
-                (0, 0, {'type': 'video'}),
-                (0, 0, {'type': 'image'}),
-                (0, 0, {'type': 'file'}),
-                (0, 0, {'type': 'link'}),
+                (0, 0, {'content_type': 'text', 'text_content': 'hi'}),
+                (0, 0, {'content_type': 'video', 'url': 'https://example.com/v.mp4'}),
+                (0, 0, {'content_type': 'image', 'url': 'https://example.com/i.png'}),
+                (0, 0, {'content_type': 'file', 'file': 'aGVsbG8=', 'file_name': 'a.txt'}),
+                (0, 0, {'content_type': 'link', 'url': 'https://example.com'}),
             ],
         })
-        types = set(lesson.content_ids.mapped('type'))
+        types = set(lesson.content_ids.mapped('content_type'))
         self.assertEqual(types, {'text', 'video', 'image', 'file', 'link'})
 
     def test_content_ordered_by_sequence(self):
@@ -122,9 +121,9 @@ class TestLmsLesson(TransactionCase):
             'name': 'Ordered Content',
             'module_id': self.module.id,
             'content_ids': [
-                (0, 0, {'type': 'text', 'sequence': 3}),
-                (0, 0, {'type': 'video', 'sequence': 1}),
-                (0, 0, {'type': 'link', 'sequence': 2}),
+                (0, 0, {'content_type': 'text', 'text_content': 'a', 'sequence': 3}),
+                (0, 0, {'content_type': 'text', 'text_content': 'b', 'sequence': 1}),
+                (0, 0, {'content_type': 'text', 'text_content': 'c', 'sequence': 2}),
             ],
         })
         contents = self.env['lms.lesson.content'].search([('lesson_id', '=', lesson.id)])
@@ -143,7 +142,7 @@ class TestLmsLesson(TransactionCase):
         lesson = self.env['lms.lesson'].create({
             'name': 'Lesson',
             'module_id': self.module.id,
-            'content_ids': [(0, 0, {'type': 'text'})],
+            'content_ids': [(0, 0, {'content_type': 'text', 'text_content': 'hi'})],
         })
         content_id = lesson.content_ids[0].id
         lesson.unlink()
@@ -166,3 +165,128 @@ class TestLmsLesson(TransactionCase):
             'module_id': self.module.id,
         })
         self.assertEqual(lesson.sequence, 1)
+
+
+class TestLmsLessonContent(TransactionCase):
+    """Scrum 33 - validation rules for lms.lesson.content."""
+
+    def setUp(self):
+        super().setUp()
+        self.course = self.env['lms.course'].create({'name': 'Test Course'})
+        self.module = self.env['lms.course.module'].create({
+            'name': 'Test Module',
+            'course_id': self.course.id,
+        })
+        self.lesson = self.env['lms.lesson'].create({
+            'name': 'Test Lesson',
+            'module_id': self.module.id,
+        })
+
+    def test_content_type_required(self):
+        with self.assertRaises(Exception):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': False,
+            })
+
+    def test_text_requires_text_content(self):
+        with self.assertRaises(ValidationError):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': 'text',
+            })
+
+    def test_text_with_text_content_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'text',
+            'text_content': 'Hello world',
+        })
+        self.assertEqual(rec.content_type, 'text')
+
+    def test_image_requires_file_or_url(self):
+        with self.assertRaises(ValidationError):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': 'image',
+            })
+
+    def test_image_with_url_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'image',
+            'url': 'https://example.com/img.png',
+        })
+        self.assertTrue(rec)
+
+    def test_image_with_file_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'image',
+            'file': 'aGVsbG8=',
+            'file_name': 'img.png',
+        })
+        self.assertTrue(rec)
+
+    def test_video_requires_file_or_url(self):
+        with self.assertRaises(ValidationError):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': 'video',
+            })
+
+    def test_video_with_url_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'video',
+            'url': 'https://youtube.com/watch?v=abc',
+        })
+        self.assertTrue(rec)
+
+    def test_video_with_uploaded_file_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'video',
+            'video_file': 'aGVsbG8=',
+            'video_filename': 'clip.mp4',
+        })
+        self.assertTrue(rec)
+
+    def test_file_requires_file(self):
+        with self.assertRaises(ValidationError):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': 'file',
+            })
+
+    def test_file_with_upload_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'file',
+            'file': 'aGVsbG8=',
+            'file_name': 'doc.pdf',
+        })
+        self.assertTrue(rec)
+
+    def test_link_requires_url(self):
+        with self.assertRaises(ValidationError):
+            self.env['lms.lesson.content'].create({
+                'lesson_id': self.lesson.id,
+                'content_type': 'link',
+            })
+
+    def test_link_with_url_succeeds(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'link',
+            'url': 'https://example.com',
+        })
+        self.assertTrue(rec)
+
+    def test_content_default_sequence_is_1(self):
+        rec = self.env['lms.lesson.content'].create({
+            'lesson_id': self.lesson.id,
+            'content_type': 'text',
+            'text_content': 'hi',
+        })
+        self.assertEqual(rec.sequence, 1)

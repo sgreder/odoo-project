@@ -8,12 +8,51 @@
         <field name="arch" type="xml">
             <tree editable="bottom">
                 <field name="sequence" widget="handle"/>
-                <field name="type"/>
+                <field name="content_type"/>
                 <field name="text_content" optional="hide"/>
                 <field name="url" optional="show"/>
-                <field name="file" optional="show"/>
+                <field name="file" filename="file_name" optional="show"/>
                 <field name="file_name" optional="hide"/>
+                <field name="video_file" filename="video_filename" optional="hide"/>
+                <field name="video_filename" optional="hide"/>
             </tree>
+        </field>
+    </record>
+
+    <!-- lms.lesson.content form view (standalone editing) -->
+    <record id="view_lms_lesson_content_form" model="ir.ui.view">
+        <field name="name">lms.lesson.content.form</field>
+        <field name="model">lms.lesson.content</field>
+        <field name="arch" type="xml">
+            <form string="Lesson Content">
+                <sheet>
+                    <group>
+                        <field name="lesson_id"/>
+                        <field name="sequence"/>
+                        <field name="content_type"/>
+                    </group>
+                    <group string="Text" invisible="content_type != 'text'">
+                        <field name="text_content" nolabel="1"/>
+                    </group>
+                    <group string="Image" invisible="content_type != 'image'">
+                        <field name="file" filename="file_name" widget="image"/>
+                        <field name="file_name"/>
+                        <field name="url" string="Image URL (optional)"/>
+                    </group>
+                    <group string="Video" invisible="content_type != 'video'">
+                        <field name="video_file" filename="video_filename"/>
+                        <field name="video_filename"/>
+                        <field name="url" string="Video URL (optional)"/>
+                    </group>
+                    <group string="File" invisible="content_type != 'file'">
+                        <field name="file" filename="file_name"/>
+                        <field name="file_name"/>
+                    </group>
+                    <group string="External Link" invisible="content_type != 'link'">
+                        <field name="url" string="Link URL"/>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 
@@ -64,7 +103,7 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <!-- Menu (adjust parent= to your team's existing LMS root menu xml id if one exists) -->
+    <!-- Menu -->
     <menuitem id="menu_lms_root"
               name="LMS"
               sequence="10"/>
