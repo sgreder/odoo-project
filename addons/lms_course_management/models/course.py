@@ -27,3 +27,10 @@ class Course(models.Model):
         inverse_name="course_id",
         string="Enrollments"
     )
+
+
+    module_ids = fields.One2many(
+        comodel_name='lms.course.module',
+        inverse_name='course_id',
+        string='Modules',
+    )
