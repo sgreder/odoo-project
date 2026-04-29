@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- lms.lesson.content inline tree (used inside lesson form) -->
+    <record id="view_lms_lesson_content_tree_inline" model="ir.ui.view">
+        <field name="name">lms.lesson.content.tree.inline</field>
+        <field name="model">lms.lesson.content</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="content_type"/>
+                <field name="text_content" optional="hide"/>
+                <field name="url" optional="show"/>
+                <field name="file" filename="file_name" optional="show"/>
+                <field name="file_name" optional="hide"/>
+                <field name="video_file" filename="video_filename" optional="hide"/>
+                <field name="video_filename" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- lms.lesson.content form view (standalone editing) -->
+    <record id="view_lms_lesson_content_form" model="ir.ui.view">
+        <field name="name">lms.lesson.content.form</field>
+        <field name="model">lms.lesson.content</field>
+        <field name="arch" type="xml">
+            <form string="Lesson Content">
+                <sheet>
+                    <group>
+                        <field name="lesson_id"/>
+                        <field name="sequence"/>
+                        <field name="content_type"/>
+                    </group>
+                    <group string="Text" invisible="content_type != 'text'">
+                        <field name="text_content" nolabel="1"/>
+                    </group>
+                    <group string="Image" invisible="content_type != 'image'">
+                        <field name="file" filename="file_name" widget="image"/>
+                        <field name="file_name"/>
+                        <field name="url" string="Image URL (optional)"/>
+                    </group>
+                    <group string="Video" invisible="content_type != 'video'">
+                        <field name="video_file" filename="video_filename"/>
+                        <field name="video_filename"/>
+                        <field name="url" string="Video URL (optional)"/>
+                    </group>
+                    <group string="File" invisible="content_type != 'file'">
+                        <field name="file" filename="file_name"/>
+                        <field name="file_name"/>
+                    </group>
+                    <group string="External Link" invisible="content_type != 'link'">
+                        <field name="url" string="Link URL"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- lms.lesson form view -->
+    <record id="view_lms_lesson_form" model="ir.ui.view">
+        <field name="name">lms.lesson.form</field>
+        <field name="model">lms.lesson</field>
+        <field name="arch" type="xml">
+            <form string="Lesson">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="module_id"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Lesson description..."/>
+                    <notebook>
+                        <page string="Contents">
+                            <field name="content_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- lms.lesson tree view -->
+    <record id="view_lms_lesson_tree" model="ir.ui.view">
+        <field name="name">lms.lesson.tree</field>
+        <field name="model">lms.lesson</field>
+        <field name="arch" type="xml">
+            <tree string="Lessons">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="module_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- lms.lesson action -->
+    <record id="action_lms_lesson" model="ir.actions.act_window">
+        <field name="name">Lessons</field>
+        <field name="res_model">lms.lesson</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_lms_root"
+              name="LMS"
+              sequence="10"/>
+    <menuitem id="menu_lms_lessons"
+              name="Lessons"
+              parent="menu_lms_root"
+              action="action_lms_lesson"
+              sequence="20"/>
+
+</odoo>
