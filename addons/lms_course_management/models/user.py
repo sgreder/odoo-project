@@ -70,5 +70,16 @@ class ResUsers(models.Model):
             'courses_taught': self.instructor_course_ids.mapped('name'),
             'courses_taught_count': len(self.instructor_course_ids),
         }
+class ResUsers(models.Model):
+    _inherit = "res.users"
 
+    enrollment_ids = fields.One2many("lms.enrollment", "student_id", string="Enrollments")
+    enrolled_course_count = fields.Integer(
+        string="Enrolled Courses", compute="_compute_enrolled_course_count"
+    )
+
+    def _compute_enrolled_course_count(self):
+        for user in self:
+            user.enrolled_course_count = len(user.enrollment_ids)
+        
         return data
